@@ -1,115 +1,87 @@
-@font-face {
-    font-family: 'Axiforma';
-    src: url('font/Axiforma-Regular.otf') format('opentype');
-    font-weight: normal;
-    font-style: normal;
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Axiforma', sans-serif;
-}
-
-body {
-    background-color: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 0 20px;
-}
-
 .login-container {
-    width: 100%;
-    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    text-align: center;
+    height: 100vh;
+    justify-content: center;
+    background-color: #fff;
 }
 
-h1 {
-    font-size: 28px;
+.login-container h1 {
+    font-size: 1.5rem;
     margin-bottom: 40px;
-    text-align: left;
-    font-weight: bold;
 }
 
 .form-group {
+    width: 100%;
+    max-width: 350px;
+    text-align: left;
     margin-bottom: 20px;
 }
 
-label {
+.form-group label {
+    margin-bottom: 8px;
     display: block;
-    font-size: 16px;
-    margin-bottom: 10px;
-    font-weight: 500;
 }
 
-input[type="text"], 
-input[type="password"] {
+.form-group input {
     width: 100%;
-    padding: 15px;
-    border: 1px solid #ddd;
+    padding: 12px 15px;
     border-radius: 8px;
-    font-size: 16px;
-    outline: none;
-}
-
-input[type="text"]:focus, 
-input[type="password"]:focus {
-    border-color: #000;
+    border: 1px solid #e0e0e0;
+    background: #f8f8f8;
 }
 
 .password-container {
     position: relative;
 }
 
+.password-container input {
+    padding-right: 45px;
+}
+
 .toggle-password {
     position: absolute;
-    right: 15px;
-    top: 15px;
-    cursor: pointer;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 45px;
     background: none;
     border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .toggle-password img {
-    width: 24px;
-    height: 24px;
-    opacity: 0.6;
+    width: 20px;
 }
 
 .remember-me {
     display: flex;
     align-items: center;
-    margin: 20px 0 30px;
-}
-
-.remember-me input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
-    margin-right: 10px;
+    gap: 8px;
+    width: 100%;
+    max-width: 350px;
 }
 
 .btn-login {
     width: 100%;
+    max-width: 350px;
     padding: 15px;
-    background-color: #000;
-    color: white;
-    border: none;
+    background: #000;
+    color: #fff;
     border-radius: 8px;
-    font-size: 16px;
+    border: none;
     cursor: pointer;
-    margin-top: 10px;
-}
-
-.btn-login:hover {
-    background-color: #333;
+    margin-top: 20px;
+    font-size: 1rem;
 }
 
 .error-message {
-    color: #ff3333;
-    font-size: 14px;
-    margin-top: 20px;
-    text-align: center;
-    display: none;
+    color: red;
+    margin-top: 15px;
 }

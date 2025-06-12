@@ -1,9 +1,4 @@
-@font-face {
-    font-family: 'Axiforma';
-    src: url('font/Axiforma-Regular.otf') format('opentype');
-    font-weight: normal;
-    font-style: normal;
-}
+
 
 * {
     margin: 0;
