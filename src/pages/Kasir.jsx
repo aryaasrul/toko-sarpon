@@ -1,142 +1,221 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
-import Cart from '../components/Cart';
-import { useAuth } from '../contexts/AuthContext'; // <-- BARU: Impor useAuth
-import '../styles/style.css';
+import { useAuth } from '../contexts/AuthContext';
+import '../styles/kasir.css';
 
 function Kasir() {
+    const navigate = useNavigate();
+    const { user, logout } = useAuth();
     const [products, setProducts] = useState([]);
+    const [filteredProducts, setFilteredProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [cart, setCart] = useState([]);
+    const [cart, setCart] = useState({});
     const [total, setTotal] = useState(0);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [activeCategory, setActiveCategory] = useState('Semua Produk');
+    const [categories] = useState(['Semua Produk', 'semua produk', 'espresso based', 'Our signature', 'milk based', 'Non coffe']);
+    const [isProcessing, setIsProcessing] = useState(false);
 
-    // --- BARU ---
-    const [isProcessing, setIsProcessing] = useState(false); // State untuk proses checkout
-    const { user } = useAuth(); // Ambil data user yang login dari context
-
-    // ... (useEffect untuk fetchProducts dan calculateTotal tidak berubah) ...
     useEffect(() => {
-        const fetchProducts = async () => {
-            try {
-                setLoading(true);
-                const { data, error } = await supabase.from('products').select('*').order('name', { ascending: true });
-                if (error) throw error;
-                setProducts(data);
-            } catch (error) {
-                setError(error.message);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchProducts();
     }, []);
 
     useEffect(() => {
-        const newTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-        setTotal(newTotal);
+        filterProducts();
+    }, [products, searchTerm, activeCategory]);
+
+    useEffect(() => {
+        calculateTotal();
     }, [cart]);
 
-
-    // ... (Fungsi addToCart, handleUpdateQuantity, handleRemoveItem tidak berubah) ...
-    const addToCart = (productToAdd) => {
-        const existingProductIndex = cart.findIndex(item => item.id === productToAdd.id);
-        if (existingProductIndex !== -1) {
-            const updatedCart = cart.map((item, index) =>
-                index === existingProductIndex ? { ...item, quantity: item.quantity + 1 } : item
-            );
-            setCart(updatedCart);
-        } else {
-            setCart([...cart, { ...productToAdd, quantity: 1 }]);
-        }
-    };
-    const handleUpdateQuantity = (productId, newQuantity) => {
-        if (newQuantity <= 0) {
-            handleRemoveItem(productId);
-        } else {
-            const updatedCart = cart.map(item => item.id === productId ? { ...item, quantity: newQuantity } : item);
-            setCart(updatedCart);
-        }
-    };
-    const handleRemoveItem = (productId) => {
-        const updatedCart = cart.filter(item => item.id !== productId);
-        setCart(updatedCart);
-    };
-
-
-    // --- BARU: Fungsi untuk memproses pesanan ke Supabase ---
-    const handleProcessOrder = async () => {
-        if (cart.length === 0) return; // Jangan proses jika keranjang kosong
-
-        setIsProcessing(true); // Mulai proses, nonaktifkan tombol
-
+    const fetchProducts = async () => {
         try {
-            // 1. Masukkan data ke tabel 'orders'
-            const { data: orderData, error: orderError } = await supabase
-                .from('orders')
-                .insert({
-                    total_price: total,
-                    user_name: user.name // Simpan nama kasir yang login
-                })
-                .select() // Minta data yang baru saja dimasukkan
-                .single(); // Karena kita hanya memasukkan 1 order
+            setLoading(true);
+            const { data, error } = await supabase
+                .from('products')
+                .select('*')
+                .order('name', { ascending: true });
+            
+            if (error) throw error;
+            setProducts(data || []);
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-            if (orderError) throw orderError;
+    const filterProducts = () => {
+        let filtered = [...products];
 
-            // 2. Siapkan data untuk tabel 'order_items'
-            const orderItems = cart.map(item => ({
-                order_id: orderData.id, // Ambil ID dari order yang baru dibuat
-                product_id: item.id,
+        // Filter by search term
+        if (searchTerm) {
+            filtered = filtered.filter(product => 
+                product.name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+
+        // Filter by category
+        if (activeCategory !== 'Semua Produk' && activeCategory !== 'semua produk') {
+            // Add category filtering logic here based on your product structure
+            // For now, we'll show all products
+        }
+
+        setFilteredProducts(filtered);
+    };
+
+    const handleCategoryClick = (category) => {
+        setActiveCategory(category);
+    };
+
+    const incrementQuantity = (product) => {
+        setCart(prevCart => ({
+            ...prevCart,
+            [product.id]: {
+                ...product,
+                quantity: (prevCart[product.id]?.quantity || 0) + 1
+            }
+        }));
+    };
+
+    const decrementQuantity = (productId) => {
+        setCart(prevCart => {
+            const newCart = { ...prevCart };
+            if (newCart[productId] && newCart[productId].quantity > 0) {
+                newCart[productId].quantity -= 1;
+                if (newCart[productId].quantity === 0) {
+                    delete newCart[productId];
+                }
+            }
+            return newCart;
+        });
+    };
+
+    const calculateTotal = () => {
+        const newTotal = Object.values(cart).reduce((sum, item) => 
+            sum + (item.price * item.quantity), 0
+        );
+        setTotal(newTotal);
+    };
+
+    const handleProcessOrder = async () => {
+        if (Object.keys(cart).length === 0) return;
+
+        setIsProcessing(true);
+        try {
+            // Create order items array
+            const orderItems = Object.values(cart).map(item => ({
+                name: item.name,
+                price: item.price,
                 quantity: item.quantity,
-                price: item.price // Simpan harga saat transaksi
+                hpp: item.hpp || 0,
+                date: new Date().toISOString(),
+                transaction_id: `txn_${Date.now()}`
             }));
 
-            // 3. Masukkan semua item keranjang ke tabel 'order_items'
-            const { error: itemsError } = await supabase
-                .from('order_items')
+            // Insert to orders table
+            const { error } = await supabase
+                .from('orders')
                 .insert(orderItems);
 
-            if (itemsError) throw itemsError;
+            if (error) throw error;
 
-            // Jika semua berhasil
             alert('Pesanan berhasil diproses!');
-            setCart([]); // Kosongkan keranjang
-
+            setCart({});
         } catch (error) {
             console.error("Error processing order:", error);
             alert(`Gagal memproses pesanan: ${error.message}`);
         } finally {
-            setIsProcessing(false); // Selesaikan proses, aktifkan kembali tombol
+            setIsProcessing(false);
         }
+    };
+
+    const handleInputManual = () => {
+        navigate('/input-manual');
     };
 
     if (loading) return <div className="loading-container">Memuat produk...</div>;
     if (error) return <div className="error-container">Error: {error}</div>;
 
     return (
-        <div>
-            {/* ... (Bagian header, search, product list tidak berubah) ... */}
-             <div className="product-list">
-                {products.map((product) => (
-                    <div key={product.id} className="product-item" onClick={() => addToCart(product)}>
-                        <img src={product.image_url || 'https://via.placeholder.com/150'} alt={product.name} />
-                        <div className="product-details">
-                            <h3>{product.name}</h3>
-                            <p>Rp {product.price.toLocaleString('id-ID')}</p>
+        <div className="kasir-container">
+            {/* Header */}
+            <div className="header">
+                <h1>Kasir</h1>
+                <div className="header-actions">
+                    <span className="user-name">{user?.name || 'User'}</span>
+                    <button className="logout-btn" onClick={logout}>Logout</button>
+                    <button className="btn-input-manual" onClick={handleInputManual}>
+                        <img src="/icons/icon-plus-input-manual.svg" alt="Plus" />
+                        Input Manual
+                    </button>
+                </div>
+            </div>
+
+            {/* Search Bar */}
+            <div className="search-bar">
+                <input 
+                    type="text" 
+                    placeholder="Cari Produk"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
+
+            {/* Categories */}
+            <div className="categories">
+                {categories.map((category) => (
+                    <button 
+                        key={category}
+                        className={`category ${activeCategory === category ? 'active' : ''}`}
+                        onClick={() => handleCategoryClick(category)}
+                    >
+                        {category}
+                    </button>
+                ))}
+            </div>
+
+            {/* Product List */}
+            <div className="product-list">
+                {filteredProducts.map((product) => (
+                    <div key={product.id} className="product-card">
+                        <div className="product-info">
+                            <div className="product-image"></div>
+                            <div className="product-details">
+                                <h3>{product.name}</h3>
+                                <p>Rp. {product.price.toLocaleString('id-ID')}</p>
+                            </div>
+                        </div>
+                        <div className="quantity-control">
+                            <button onClick={() => decrementQuantity(product.id)}>
+                                <img src="/icons/icon-minus-circle.svg" alt="Minus" />
+                            </button>
+                            <span>{cart[product.id]?.quantity || 0}</span>
+                            <button onClick={() => incrementQuantity(product)}>
+                                <img src="/icons/icon-plus-circle.svg" alt="Plus" />
+                            </button>
                         </div>
                     </div>
                 ))}
             </div>
 
-            {/* BARU: Kirim props onProcessOrder dan isProcessing */}
-            <Cart 
-                cartItems={cart}
-                onUpdateQuantity={handleUpdateQuantity}
-                onRemoveItem={handleRemoveItem}
-                total={total}
-                onProcessOrder={handleProcessOrder}
-                isProcessing={isProcessing}
-            />
+            {/* Cart Summary */}
+            <div className="cart-summary">
+                <div className="cart-info">
+                    <p>Total</p>
+                    <p id="total-amount">Rp. {total.toLocaleString('id-ID')}</p>
+                </div>
+                <button 
+                    id="btn-process" 
+                    className="btn-process"
+                    onClick={handleProcessOrder}
+                    disabled={isProcessing || Object.keys(cart).length === 0}
+                >
+                    {isProcessing ? 'Memproses...' : 'Proses Pesanan'}
+                </button>
+            </div>
         </div>
     );
 }

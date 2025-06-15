@@ -93,12 +93,6 @@
     border-color: #000;
 }
 
-.product-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 15px;
-    padding: 20px;
-}
 
 .product-item {
     border: 1px solid #e0e0e0;
@@ -217,42 +211,42 @@
     cursor: not-allowed;
 }
 
+/* Navbar - exact copy from vanilla */
 .navbar {
     position: fixed;
     bottom: 0;
     left: 0;
-    width: 100%;
-    background-color: #fff;
+    right: 0;
+    background-color: #000;
     display: flex;
     justify-content: space-around;
-    border-top: 1px solid var(--border-color);
-    padding: 10px 0;
-    z-index: 1000;
+    padding: 15px 0;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    z-index: 100;
 }
 
 .nav-item {
     display: flex;
-    flex-direction: column;
+    justify-content: center;
     align-items: center;
-    color: #999;
-    text-decoration: none;
-    gap: 5px;
-    font-size: 12px;
+    cursor: pointer;
+    padding: 5px 15px;
+    border-radius: 8px;
+    text-decoration: none; /* For React Router Link */
+}
+
+.nav-item.active {
+    background-color: #333;
 }
 
 .nav-item img {
     width: 24px;
     height: 24px;
-    filter: grayscale(100%);
-    opacity: 0.7;
+    filter: none; /* Remove grayscale */
 }
 
-.nav-item.active {
-    color: #000;
-    font-weight: bold;
-}
-
-.nav-item.active img {
-    filter: none;
-    opacity: 1;
+/* Hide text in navbar icons */
+.nav-item span {
+    display: none;
 }

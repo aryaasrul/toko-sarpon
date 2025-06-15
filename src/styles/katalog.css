@@ -85,3 +85,136 @@
     cursor: pointer;
     padding: 5px;
 }
+
+/* Container */
+.katalog-container {
+    min-height: 100vh;
+    background-color: #f5f5f5;
+}
+
+/* Override any conflicting styles */
+.header {
+    background-color: #f5f5f5 !important;
+    border-bottom: none !important;
+}
+
+.search-container {
+    display: flex;
+    align-items: center;
+    margin: 0 25px 15px;
+}
+
+.search-bar {
+    flex: 1;
+    position: relative;
+    margin-right: 10px;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 12px 15px;
+    background-color: #e8e8e8;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+.btn-filter {
+    background-color: #e8e8e8;
+    border: none;
+    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+.btn-filter img {
+    width: 20px;
+    height: 20px;
+}
+
+/* Product card - same as kasir */
+.product-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.product-options {
+    display: flex;
+    align-items: center;
+}
+
+.btn-options {
+    background: none;
+    border: none;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn-options img {
+    width: 20px;
+    height: 20px;
+}
+
+/* Modal styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 50% auto 0;
+    width: 80%;
+    max-width: 400px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    animation: slideUp 0.3s;
+}
+
+.option-btn {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 8px;
+    background-color: #f0f0f0;
+    font-size: 16px;
+    cursor: pointer;
+    text-align: center;
+}
+
+.option-btn.danger {
+    background-color: #ffebee;
+    color: #d32f2f;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+}
+
+.modal-buttons .option-btn {
+    width: 48%;
+    margin-bottom: 0;
+}
